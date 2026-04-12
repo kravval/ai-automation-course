@@ -1,4 +1,5 @@
-from categorization import  categorize_amount
+from categorization import categorize_amount
+from statistics import calculate_payment_stats
 from tabulate import tabulate
 
 # Тестовые данные — список счетов от разных поставщиков
@@ -13,10 +14,6 @@ invoices = [
     {"number": "INV-008", "vendor": "Acme Corp", "amount": 2340.80, "status": "paid"},
 ]
 table_data = []
-paid_count = 0
-unpaid_count = 0
-total_paid = 0.0
-total_unpaid = 0.0
 small_count = 0
 small_amount = 0.0
 medium_count = 0
@@ -30,12 +27,8 @@ for invoice in invoices:
 
     if invoice["status"] == "paid":
         marker = "✓"
-        paid_count += 1
-        total_paid += invoice["amount"]
     else:
         marker = "✗"
-        unpaid_count += 1
-        total_unpaid += invoice["amount"]
 
     row = [
         marker,
@@ -46,6 +39,12 @@ for invoice in invoices:
         invoice["status"]
     ]
     table_data.append(row)
+
+payment_stats = calculate_payment_stats(invoices)
+paid_count = payment_stats["paid_count"]
+unpaid_count = payment_stats["unpaid_count"]
+total_paid = payment_stats["total_paid"]
+total_unpaid = payment_stats["total_unpaid"]
 
 headers = ["", "Number", "Vendor", "Amount", "Category", "Status"]
 
