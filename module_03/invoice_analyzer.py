@@ -1,3 +1,4 @@
+from categorization import  categorize_amount
 from tabulate import tabulate
 
 # Тестовые данные — список счетов от разных поставщиков
@@ -24,18 +25,8 @@ large_count = 0
 large_amount = 0.0
 
 for invoice in invoices:
-    if invoice["amount"] < 500:
-        category = "small"
-        small_count += 1
-        small_amount += invoice["amount"]
-    elif invoice["amount"] < 3000:
-        category = "medium"
-        medium_count += 1
-        medium_amount += invoice["amount"]
-    else:
-        category = "large"
-        large_count += 1
-        large_amount += invoice["amount"]
+
+    category = categorize_amount(invoice["amount"])
 
     if invoice["status"] == "paid":
         marker = "✓"
