@@ -1,5 +1,5 @@
 from categorization import categorize_amount
-from statistics import calculate_payment_stats
+from statistics import calculate_payment_stats, calculate_category_stats
 from tabulate import tabulate
 
 # Тестовые данные — список счетов от разных поставщиков
@@ -14,16 +14,10 @@ invoices = [
     {"number": "INV-008", "vendor": "Acme Corp", "amount": 2340.80, "status": "paid"},
 ]
 table_data = []
-small_count = 0
-small_amount = 0.0
-medium_count = 0
-medium_amount = 0.0
-large_count = 0
-large_amount = 0.0
 
 for invoice in invoices:
 
-    category = categorize_amount(invoice["amount"])
+    invoice["category"] = categorize_amount(invoice["amount"])
 
     if invoice["status"] == "paid":
         marker = "✓"
@@ -35,7 +29,7 @@ for invoice in invoices:
         invoice["number"],
         invoice["vendor"],
         f"{invoice['amount']:.2f}",
-        category,
+        invoice["category"],
         invoice["status"]
     ]
     table_data.append(row)
@@ -45,14 +39,15 @@ paid_count = payment_stats["paid_count"]
 unpaid_count = payment_stats["unpaid_count"]
 total_paid = payment_stats["total_paid"]
 total_unpaid = payment_stats["total_unpaid"]
+category_stats = calculate_category_stats(invoices)
 
 headers = ["", "Number", "Vendor", "Amount", "Category", "Status"]
 
 print("=== По размеру ===")
 size_data = [
-    ["small", small_count, f"{small_amount:.2f}"],
-    ["medium", medium_count, f"{medium_amount:.2f}"],
-    ["large", large_count, f"{large_amount:.2f}"],
+    ["small", category_stats["small"]["count"], f"{category_stats["small"]["amount"]:.2f}"],
+    ["medium", category_stats["medium"]["count"], f"{category_stats["medium"]["amount"]:.2f}"],
+    ["large", category_stats["large"]["count"], f"{category_stats["large"]["amount"]:.2f}"],
 ]
 print(tabulate(size_data, headers=["Категория", "Количество", "Сумма"], tablefmt="fancy_grid"))
 
