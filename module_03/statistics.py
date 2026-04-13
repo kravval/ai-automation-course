@@ -61,6 +61,29 @@ def calculate_category_stats(invoices: list) -> dict:
     return stats
 
 
+def find_max_debtor(invoices: list) -> tuple:
+    """
+    Находит поставщика с максимальной суммой неоплаченных счетов.
+
+    Args:
+        invoices: Список словарей.
+
+    Returns:
+        Кортеж(имя_поставщика, сумма_долга).
+        Если все оплачены - (None, 0.0).
+    """
+
+    max_debt = 0.0
+    max_debt_vector = None
+
+    for invoice in invoices:
+        if invoice["status"] == "unpaid" and invoice["amount"] > max_debt:
+            max_debt = invoice["amount"]
+            max_debt_vector = invoice["vendor"]
+
+    return max_debt_vector, max_debt
+
+
 if __name__ == "__main__":
     test_invoices = [
         {"number": "T-001", "amount": 1000.00, "status": "paid", "category": "medium"},
@@ -90,3 +113,25 @@ if __name__ == "__main__":
     print("✓ calculate_category_stats")
 
     print("\n✓ All statistics tests passed!")
+
+    # Тест 3: find_max_debtor
+    test_invoices_with_vendors = [
+        {"number": "T-001", "amount": 1000.00, "status": "paid", "vendor": "A"},
+        {"number": "T-002", "amount": 4000.00, "status": "unpaid", "vendor": "B"},
+        {"nuber": "T-003", "amount": 2000.00, "status": "unpaid", "vendor": "C"}
+    ]
+
+    vendor, debt = find_max_debtor(test_invoices_with_vendors)
+    print(f"Max debtor: {vendor}, debt: {debt}")
+    assert vendor == "B"
+    assert debt == 4000.00
+    print("✓ find_max_debtor")
+
+    # Тест на случай, когда все оплачено
+    all_paid = [
+        {"number": "T-001", "amount": 1000.00, "status": "paid", "vendor": "A"}
+    ]
+    vendor, debt = find_max_debtor(all_paid)
+    assert vendor is None
+    assert debt == 0.0
+    print("✓ find_max_debtor (all paid)")

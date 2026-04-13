@@ -1,5 +1,5 @@
 from categorization import categorize_amount
-from statistics import calculate_payment_stats, calculate_category_stats
+from statistics import calculate_payment_stats, calculate_category_stats, find_max_debtor
 from tabulate import tabulate
 
 # Тестовые данные — список счетов от разных поставщиков
@@ -72,12 +72,8 @@ if not found_critical:
 
 print()
 print("=== Поставщик с максимальной задолженностью ===")
-max_debt = 0.0
-max_debt_vendor = ""
-for invoice in invoices:
-    if invoice["status"] == "unpaid" and invoice["amount"] > max_debt:
-        max_debt = invoice["amount"]
-        max_debt_vendor = invoice["vendor"]
+
+max_debt_vendor, max_debt = find_max_debtor(invoices)
 
 if max_debt_vendor:
     print(f"  {max_debt_vendor}: {max_debt:.2f}")
