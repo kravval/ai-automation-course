@@ -1,5 +1,6 @@
 from tabulate import tabulate
 
+
 def print_invoices_table(invoices: list) -> None:
     """
     Выводит таблицу счетов в консоль.
@@ -56,6 +57,21 @@ def print_category_summary(stats: dict) -> None:
                    ))
 
 
+def print_critical_invoices(invoices: list, threshold: float = 3000.0) -> None:
+    """
+    Выводит список крупных неоплаченных счетов.
+    Args:
+        invoices: Список словарей со счетами.
+        threshold: Минимальная сумма для критического счёта (по умолчанию 3000).
+    """
+    found_critical = False
+    for invoice in invoices:
+        if invoice["amount"] >= threshold and invoice["status"] == "unpaid":
+            print(f"    {invoice['number']} от {invoice['vendor']}: {invoice['amount']:.2f}")
+            found_critical = True
+    if not found_critical:
+        print(" Нет критических счетов")
+
 if __name__ == "__main__":
     test_invoices = [
         {"number": "T-001", "vendor": "TestCorp", "amount": 1500.00, "status": "paid",
@@ -67,8 +83,7 @@ if __name__ == "__main__":
     print("=== Test: print_invoices_table ===")
     print_invoices_table(test_invoices)
     print()
-    print("===Test: print_payment_summary===")
-    test_invoices
+    print("=== Test: print_payment_summary===")
 
     test_payment_stats = {
         "paid_count": 2,
@@ -85,3 +100,11 @@ if __name__ == "__main__":
         "large": {"count": 1, "amount": 5000.00}
     }
     print_category_summary(test_category_stats)
+
+    print()
+    print("=== Test: print_critical_invoices ===")
+    print_critical_invoices(test_invoices)
+
+    print()
+    print("=== Test: print_critical_invoices with threshold=10000 ===")
+    print_critical_invoices(test_invoices, threshold=10000)
