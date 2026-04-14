@@ -1,7 +1,7 @@
 from tabulate import tabulate
 from categorization import categorize_amount
 from statistics import calculate_payment_stats, calculate_category_stats, find_max_debtor
-from reporting import print_invoices_table
+from reporting import print_invoices_table, print_payment_summary
 
 # Тестовые данные — список счетов от разных поставщиков
 invoices = [
@@ -45,13 +45,7 @@ print(tabulate(size_data, headers=["Категория", "Количество",
 # Вывод статистики по оплате (пока напрямую, вынесем в итерации 6)
 print()
 print("=== По оплате ===")
-payment_data = [
-    ["Оплачено",    payment_stats["paid_count"],   f"{payment_stats['total_paid']:.2f}"],
-    ["Не оплачено", payment_stats["unpaid_count"], f"{payment_stats['total_unpaid']:.2f}"],
-    ["Всего",       payment_stats["paid_count"] + payment_stats["unpaid_count"],
-     f"{payment_stats['total_paid'] + payment_stats['total_unpaid']:.2f}"],
-]
-print(tabulate(payment_data, headers=["Статус", "Количество", "Сумма"], tablefmt="fancy_grid"))
+print_payment_summary(payment_stats)
 
 # Критические счета
 print()
