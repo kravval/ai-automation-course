@@ -1,8 +1,5 @@
 from tabulate import tabulate
 
-from module_02.invoice_analyzer import headers
-
-
 def print_invoices_table(invoices: list) -> None:
     """
     Выводит таблицу счетов в консоль.
@@ -41,7 +38,24 @@ def print_payment_summary(stats: dict) -> None:
          f"{stats['total_paid'] + stats['total_unpaid']:.2f}"]
     ]
     print(tabulate(data, headers=["Статус", "Количество", "Сумма"], tablefmt="fancy_grid",
-        numalign="center", stralign="center"))
+                   numalign="center", stralign="center"))
+
+
+def print_category_summary(stats: dict) -> None:
+    """Выодит таблицу статистики по категориям размера"""
+    data = []
+
+    for category in ["small", "medium", "large"]:
+        data.append([
+            category,
+            stats[category]["count"],
+            f"{stats[category]['amount']:.2f}"
+        ])
+    print(tabulate(data, headers=["Категория", "Количество", "Сумма"],
+                   tablefmt="fancy_grid", numalign="center", stralign="center"
+                   ))
+
+
 if __name__ == "__main__":
     test_invoices = [
         {"number": "T-001", "vendor": "TestCorp", "amount": 1500.00, "status": "paid",
@@ -64,3 +78,10 @@ if __name__ == "__main__":
     }
 
     print_payment_summary(test_payment_stats)
+    print()
+    test_category_stats = {
+        "small": {"count": 1, "amount": 200.00},
+        "medium": {"count": 2, "amount": 3500.00},
+        "large": {"count": 1, "amount": 5000.00}
+    }
+    print_category_summary(test_category_stats)

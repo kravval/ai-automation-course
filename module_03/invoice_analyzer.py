@@ -1,7 +1,7 @@
 from tabulate import tabulate
 from categorization import categorize_amount
 from statistics import calculate_payment_stats, calculate_category_stats, find_max_debtor
-from reporting import print_invoices_table, print_payment_summary
+from reporting import print_invoices_table, print_payment_summary, print_category_summary
 
 # Тестовые данные — список счетов от разных поставщиков
 invoices = [
@@ -35,12 +35,7 @@ print_invoices_table(enriched_invoices)
 # Вывод статистики по размеру (пока напрямую, вынесем в итерации 7)
 print()
 print("=== По размеру ===")
-size_data = [
-    ["small",  category_stats["small"]["count"],  f"{category_stats['small']['amount']:.2f}"],
-    ["medium", category_stats["medium"]["count"], f"{category_stats['medium']['amount']:.2f}"],
-    ["large",  category_stats["large"]["count"],  f"{category_stats['large']['amount']:.2f}"],
-]
-print(tabulate(size_data, headers=["Категория", "Количество", "Сумма"], tablefmt="fancy_grid"))
+print_category_summary(category_stats)
 
 # Вывод статистики по оплате (пока напрямую, вынесем в итерации 6)
 print()
