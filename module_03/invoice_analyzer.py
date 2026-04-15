@@ -5,7 +5,8 @@ from reporting import (
     print_invoices_table,
     print_payment_summary,
     print_category_summary,
-    print_critical_invoices
+    print_critical_invoices,
+    print_max_debtor
 )
 
 # Тестовые данные — список счетов от разных поставщиков
@@ -55,7 +56,4 @@ print_critical_invoices(enriched_invoices)
 # Максимальный должник
 print()
 print("=== Поставщик с максимальной задолженностью ===")
-if max_debt_vendor:
-    print(f"  {max_debt_vendor}: {max_debt:.2f}")
-else:
-    print("  Все счета оплачены")
+print_max_debtor(max_debt_vendor, max_debt)

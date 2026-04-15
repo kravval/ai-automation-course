@@ -43,7 +43,7 @@ def print_payment_summary(stats: dict) -> None:
 
 
 def print_category_summary(stats: dict) -> None:
-    """Выодит таблицу статистики по категориям размера"""
+    """Выводит таблицу статистики по категориям размера"""
     data = []
 
     for category in ["small", "medium", "large"]:
@@ -71,6 +71,21 @@ def print_critical_invoices(invoices: list, threshold: float = 3000.0) -> None:
             found_critical = True
     if not found_critical:
         print(" Нет критических счетов")
+
+
+def print_max_debtor(vendor: str | None, debt: float) -> None:
+    """
+    Выводит информацию о поставщике с максимальной задолженностью.
+    Args:
+        vendor: Имя поставщика (или None, если все оплачено).
+        debt: Сумма задолженности.
+    """
+
+    if vendor:
+        print(f"    {vendor}: {debt:.2f}")
+    else:
+        print(" Все счета оплачены")
+
 
 if __name__ == "__main__":
     test_invoices = [
@@ -108,3 +123,8 @@ if __name__ == "__main__":
     print()
     print("=== Test: print_critical_invoices with threshold=10000 ===")
     print_critical_invoices(test_invoices, threshold=10000)
+
+    print()
+    print("=== Test: print_max_debtor ===")
+    print_max_debtor("TestCorp", 4000.00)
+    print_max_debtor(None, 0.0)
