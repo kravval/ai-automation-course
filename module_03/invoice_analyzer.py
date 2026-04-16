@@ -1,4 +1,5 @@
 from tabulate import tabulate
+import logging
 from categorization import categorize_amount
 from statistics import calculate_payment_stats, calculate_category_stats, find_max_debtor
 from reporting import (
@@ -8,6 +9,12 @@ from reporting import (
     print_critical_invoices,
     print_max_debtor
 )
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def main():
     """Главная функция: обрабатывает счета и выводит отчёт."""
@@ -22,6 +29,7 @@ def main():
         {"number": "INV-007", "vendor": "OfficeMax", "amount": 175.00, "status": "paid"},
         {"number": "INV-008", "vendor": "Acme Corp", "amount": 2340.80, "status": "paid"},
     ]
+    logger.info("Начинаю обработку %d счетов", len(invoices))
 
     # Подготовка счетов: добавляем category и marker
     enriched_invoices = []
@@ -30,6 +38,8 @@ def main():
         marker = "✓" if invoice["status"] == "paid" else "✗"
         enriched = {**invoice, "category": category, "marker": marker}
         enriched_invoices.append(enriched)
+
+    logger.info("Подготовлено %d счетов к выводу", len(enriched_invoices))
 
     # Расчёт статистики
     payment_stats = calculate_payment_stats(enriched_invoices)
