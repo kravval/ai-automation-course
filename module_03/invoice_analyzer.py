@@ -16,6 +16,36 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+def process_invoice(invoice: dict) -> dict | None:
+    """
+    Подготавливает один счёт к выводу: добавляет категорию и маркер.
+
+    Args:
+        invoice: Словарь с полями number, vendor, amount, status.
+
+    Returns:
+        Расширенный словарь с полями category и marker, или None, если счёт невалидный.
+    """
+    try:
+        amount = invoice["amount"]
+        status = invoice["status"]
+
+        category = categorize_amount(amount)
+        marker = "✓" if status == "paid" else "✗"
+
+        return {**invoice, "category": category, "marker": marker}
+
+    except KeyError as e:
+        logger.error("Невалидный счёт %s: отсутствует поле %s",
+                     invoice.get("number", "UNKNOWN"), e)
+        return None
+    except TypeError as e:
+        logger.error("Невалидный счёт %s: ошибка типа данных — %s",
+                     invoice.get("number", "UNKNOWN"), e)
+        return None
+
+
 def main():
     """Главная функция: обрабатывает счета и выводит отчёт."""
     # Тестовые данные — список счетов от разных поставщиков
@@ -34,10 +64,9 @@ def main():
     # Подготовка счетов: добавляем category и marker
     enriched_invoices = []
     for invoice in invoices:
-        category = categorize_amount(invoice["amount"])
-        marker = "✓" if invoice["status"] == "paid" else "✗"
-        enriched = {**invoice, "category": category, "marker": marker}
-        enriched_invoices.append(enriched)
+        result = process_invoice(invoice)
+        if result is not None:
+            enriched_invoices.append(result)
 
     logger.info("Подготовлено %d счетов к выводу", len(enriched_invoices))
 
@@ -70,5 +99,6 @@ def main():
     print("=== Поставщик с максимальной задолженностью ===")
     print_max_debtor(max_debt_vendor, max_debt)
 
-if __name__== "__main__":
+
+if __name__ == "__main__":
     main()
