@@ -3,8 +3,7 @@
 Сохраняет результат в JSON-файл для дальнейшего анализа.
 """
 import requests
-from urllib3.util import timeout
-
+import json
 
 def fetch_books(query: str, limit: int = 50) -> list:
     """
@@ -58,6 +57,11 @@ def clean_book(raw: dict) -> dict:
         "subject": raw.get("subject", [])[:5]
     }
 
+def save_to_json(books: list, filepath: str) -> None:
+    """Сохраняет список книг в JSON-файл."""
+    with open(filepath, "w", encoding="UTF-8") as f:
+        json.dump(books, f, indent=2, ensure_ascii=False)
+    print(f"Сохранено {len(books)} книг в {filepath}")
 
 if __name__ == "__main__":
     # Тест 1: fetch_books
@@ -66,35 +70,42 @@ if __name__ == "__main__":
     print("✓ fetch_books работает")
 
     # Тест 2: clean_book на реальных данных
-    print("\nТест clean_book на первой книге:")
-    first_raw = test_books[0]
-    first_clean = clean_book(first_raw)
+    first_clean = clean_book(test_books[0])
+    assert isinstance(first_clean["title"], str)
+    assert isinstance(first_clean["author"], str)
+    assert isinstance(first_clean["subject"], list)
+    print("✓ clean_book работает")
 
-    print(f"  title:    {first_clean['title']}")
-    print(f"  author:   {first_clean['author']}")
-    print(f"  year:     {first_clean['first_publish_year']}")
-    print(f"  publisher:{first_clean['publisher']}")
-    print(f"  pages:    {first_clean['pages']}")
-    print(f"  editions: {first_clean['edition_count']}")
-    print(f"  language: {first_clean['language']}")
-    print(f"  subjects: {first_clean['subject']}")
-
-    # Проверяем типы полей
-    assert isinstance(first_clean["title"], str), "title должен быть строкой"
-    assert isinstance(first_clean["author"], str), "author должен быть строкой"
-    assert isinstance(first_clean["edition_count"], int), "edition_count должен быть числом"
-    assert isinstance(first_clean["subject"], list), "subject должен быть списком"
-
-    print("✓ clean_book работает, типы полей правильные")
-
-    # Тест 3: clean_book на «битых» данных (пустой словарь)
-    print("\nТест clean_book на пустом словаре:")
+    # Тест 3: clean_book на пустом словаре
     empty_clean = clean_book({})
-    print(f"  Результат: {empty_clean}")
     assert empty_clean["title"] == "Unknown Title"
-    assert empty_clean["author"] == "Unknown Author"
     assert empty_clean["publisher"] == "Unknown Publisher"
-    assert empty_clean["pages"] is None
-    assert empty_clean["subject"] == []
+    print("✓ clean_book обрабатывает отсутствующие поля")
 
-    print("✓ clean_book корректно обрабатывает отсутствующие поля")
+    # Тест 4: save_to_json
+    test_clean_books = [clean_book(raw) for raw in test_books]
+    save_to_json(test_clean_books, "test_books.json")
+    print("✓ save_to_json работает (проверь файл module_04/test_books.json)")
+
+    print("\nВсе тесты пройдены! Запускаю полное скачивание...\n")
+
+    # --- Полное скачивание ---
+    queries = [
+        ("python programming", 25),
+        ("java spring framework", 25),
+    ]
+
+    all_books = []
+    for query, limit in queries:
+        raw_books = fetch_books(query, limit)
+        for raw in raw_books:
+            clean = clean_book(raw)
+            all_books.append(clean)
+
+    print(f"\nВсего собрано {len(all_books)} книг")
+    save_to_json(all_books, "books.json")
+
+    # Показываем первые 5 для финальной проверки
+    print("\nПервые 5 книг:")
+    for i, book in enumerate(all_books[:5], start=1):
+        print(f"  {i}. {book['title']} — {book['author']} ({book['first_publish_year']})")

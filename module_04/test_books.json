@@ -1,0 +1,40 @@
+[
+  {
+    "title": "Core Python Programming",
+    "author": "R. Nageswara Rao",
+    "first_publish_year": 2016,
+    "publisher": "Unknown Publisher",
+    "pages": null,
+    "edition_count": 5,
+    "language": [
+      "hin",
+      "eng"
+    ],
+    "subject": []
+  },
+  {
+    "title": "Core Python programming",
+    "author": "Wesley Chun",
+    "first_publish_year": 2006,
+    "publisher": "Unknown Publisher",
+    "pages": null,
+    "edition_count": 2,
+    "language": [
+      "eng"
+    ],
+    "subject": []
+  },
+  {
+    "title": "Black Hat Python",
+    "author": "Justin Seitz, Tim Arnold",
+    "first_publish_year": 2014,
+    "publisher": "Unknown Publisher",
+    "pages": null,
+    "edition_count": 3,
+    "language": [
+      "eng",
+      "pol"
+    ],
+    "subject": []
+  }
+]
