@@ -13,6 +13,7 @@ def load_books(filepath: str) -> list:
     print(f"Загружено {len(books)} книг из {filepath}")
     return books
 
+
 def filter_by_year(books: list, min_year: int) -> list:
     """
     Возвращает книги, опубликованные не раньше указаннаго года.
@@ -32,9 +33,11 @@ def filter_by_year(books: list, min_year: int) -> list:
             result.append(book)
     return result
 
+
 def filter_with_pages(books: list) -> list:
     """Возвращает только те книги, у которых указано количество страниц."""
     return [book for book in books if book.get("pages") is not None]
+
 
 def sort_by_year(books: list, descending: bool = True) -> list:
     """
@@ -57,6 +60,12 @@ def sort_by_year(books: list, descending: bool = True) -> list:
     )
 
     return sorted_books + books_without_year
+
+
+def top_by_editions(books: list, n: int = 10) -> list:
+    """Возвращает N книг с наибольшим количеством изданий."""
+    return sorted(books, key=lambda b: b.get("edition_count", 0), reverse=True)[:n]
+
 
 if __name__ == "__main__":
     books = load_books("books.json")
@@ -93,3 +102,13 @@ if __name__ == "__main__":
              if b["first_publish_year"] is not None]
     assert years == sorted(years, reverse=True), "Сортировка нарушена"
     print("✓ sort_by_year")
+
+    # Тест: топ по изданиям
+    top_editions = top_by_editions(books, n=5)
+    print(f"\nТоп-5 по количеству изданий:")
+    for book in top_editions:
+        print(f"  {book['title']}: {book['edition_count']} изданий")
+
+    # Проверка: первая книга имеет больше всего изданий
+    assert top_editions[0]["edition_count"] >= top_editions[-1]["edition_count"]
+    print("✓ top_by_editions")
