@@ -96,6 +96,23 @@ def count_by_decade(books: list) -> dict:
 
     return dict(sorted(counts.items()))
 
+def group_by_author(books: list) -> dict:
+    """
+    Группирует книги по автору.
+
+    Args:
+        books: Список словарей с книгами.
+    Returns:
+        Словарь {автор: [список_книг]}.
+    """
+
+    groups = {}
+
+    for book in books:
+        author = book.get("author", "Unknown Author")
+        groups.setdefault(author, []).append(book)
+    return groups
+
 if __name__ == "__main__":
     books = load_books("books.json")
     assert len(books) > 0
@@ -159,3 +176,7 @@ if __name__ == "__main__":
     # Проверка: сумма всех значений = общему количеству книг
     assert sum(decade_counts.values()) == len(books), "Сумма не сходится"
     print("✓ count_by_decade")
+
+    # Тест: группировка по автору
+    author_groups = group_by_author(books)
+    print(f"\nВсего уникальных авторов: {len(author_groups)}")
