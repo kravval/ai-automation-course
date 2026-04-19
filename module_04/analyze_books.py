@@ -32,6 +32,10 @@ def filter_by_year(books: list, min_year: int) -> list:
             result.append(book)
     return result
 
+def filter_with_pages(books: list) -> list:
+    """Возвращает только те книги, у которых указано количество страниц."""
+    return [book for book in books if book.get("pages") is not None]
+
 
 if __name__ == "__main__":
     books = load_books("books.json")
@@ -49,3 +53,11 @@ if __name__ == "__main__":
         assert book["first_publish_year"] >= 2015, \
             f"Книга {book['title']} с годом {book['first_publish_year']} прошла фильтр"
     print("✓ filter_by_year")
+
+    # Тест: фильтрация по наличию страниц
+    with_pages = filter_with_pages(books)
+    without_pages = len(books) - len(with_pages)
+    print(f"\nС указанием страниц: {len(with_pages)}, без: {without_pages}")
+    for book in with_pages[:3]:
+        print(f"  {book['title']}: {book['pages']} стр.")
+    print("✓ filter_with_pages")
