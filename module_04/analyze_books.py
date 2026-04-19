@@ -67,6 +67,21 @@ def top_by_editions(books: list, n: int = 10) -> list:
     return sorted(books, key=lambda b: b.get("edition_count", 0), reverse=True)[:n]
 
 
+def get_decade(year: int | None) -> str:
+    """
+    Возвращает десятилетие для года: 1996 → "1990s", 2017 → "2010s".
+
+    Args:
+        year: Год публикации или None.
+    Returns:
+            Строка вида "2010s" или "Unknown" для None.
+    """
+    if year is None:
+        return "Unknown"
+    decade = (year // 10) * 10
+    return f"{decade}s"
+
+
 if __name__ == "__main__":
     books = load_books("books.json")
     assert len(books) > 0
@@ -112,3 +127,11 @@ if __name__ == "__main__":
     # Проверка: первая книга имеет больше всего изданий
     assert top_editions[0]["edition_count"] >= top_editions[-1]["edition_count"]
     print("✓ top_by_editions")
+
+    # Тест: get_decade
+    assert get_decade(1996) == "1990s"
+    assert get_decade(2003) == "2000s"
+    assert get_decade(2017) == "2010s"
+    assert get_decade(2024) == "2020s"
+    assert get_decade(None) == "Unknown"
+    print("\n✓ get_decade")
