@@ -219,6 +219,67 @@ def analyze_languages(books: list) -> dict:
         "multilingual": multilingual,
     }
 
+def print_full_report(books: list) -> None:
+    """Выводит полный аналитический отчёт по каталогу книг."""
+    print(f"\n{'='*60}")
+    print(f"  АНАЛИТИЧЕСКИЙ ОТЧЁТ ПО КАТАЛОГУ ({len(books)} книг)")
+    print(f"{'='*60}")
+
+    # Общая статистика
+    recent = filter_by_year(books, 2020)
+    total_editions = sum(b.get("edition_count", 0) for b in books)
+    print(f"\n📊 Общая статистика:")
+    print(f"  Всего книг: {len(books)}")
+    print(f"  Опубликовано с 2020 года: {len(recent)}")
+    print(f"  Суммарно изданий: {total_editions}")
+
+    # Топ по изданиям
+    top_ed = top_by_editions(books, n=5)
+    print(f"\n🏆 Топ-5 по количеству изданий:")
+    for i, book in enumerate(top_ed, start=1):
+        print(f"  {i}. {book['title']} — {book['edition_count']} изд. "
+              f"({book['first_publish_year']})")
+
+    # По десятилетиям
+    d_stats = decade_stats(books)
+    print(f"\n📅 Книги по десятилетиям:")
+    table = [
+        [s["decade"], s["book_count"], s["avg_editions"],
+         s["top_book"][:40], s["top_editions"]]
+        for s in d_stats
+    ]
+    print(tabulate(
+        table,
+        headers=["Декада", "Книг", "Ср. изд.", "Топ книга", "Изд."],
+        tablefmt="fancy_grid"
+    ))
+
+    # Авторы с несколькими книгами
+    author_groups = group_by_author(books)
+    prolific = find_prolific_authors(author_groups, min_books=2)
+    if prolific:
+        print(f"\n✍️ Авторы с 2+ книгами:")
+        for a in prolific:
+            titles = ", ".join(a["titles"][:3])
+            if len(a["titles"]) > 3:
+                titles += f" (+{len(a['titles']) - 3})"
+            print(f"  {a['author']}: {a['book_count']} книг — {titles}")
+    else:
+        print(f"\n✍️ Авторов с 2+ книгами не найдено")
+
+    # Языки
+    lang_analysis = analyze_languages(books)
+    multilingual = lang_analysis["multilingual"]
+    if multilingual:
+        print(f"\n🌍 Мультиязычные книги ({len(multilingual)}):")
+        for book in multilingual:
+            print(f"  {book['title']}: {', '.join(book['languages'])}")
+
+    # Самые новые
+    newest = sort_by_year(books, descending=True)[:5]
+    print(f"\n📅 5 самых новых книг:")
+    for book in newest:
+        print(f"  {book['title']} ({book['first_publish_year']})")
 
 if __name__ == "__main__":
     books = load_books("books.json")
