@@ -13,12 +13,39 @@ def load_books(filepath: str) -> list:
     print(f"Загружено {len(books)} книг из {filepath}")
     return books
 
+def filter_by_year(books: list, min_year: int) -> list:
+    """
+    Возвращает книги, опубликованные не раньше указаннаго года.
+
+    Args:
+        books: Список словарей с книгами.
+        min_year: Минимальный год публикации (включительно).
+
+    Returns:
+        Новый список книг, прошедших фильтр.
+    """
+    result = []
+
+    for book in books:
+        year = book.get("first_publish_year")
+        if year is not None and year >= min_year:
+            result.append(book)
+    return result
+
+
 if __name__ == "__main__":
     books = load_books("books.json")
+    assert len(books) > 0
+    print("✓ load_books")
 
-    # Быстрая проверка: данные загрузились, структура правильная
-    assert len(books) > 0, "Файл пустой"
-    assert "title" in books[0], "Нет поля title"
-    assert "author" in books[0], "Нет поля author"
-    print(f"Первая книга: {books[0]['title']}")
-    print("✓ load_books работает")
+    # Тест: фильтрация по году
+    recent = filter_by_year(books, 2015)
+    print(f"\nКниги с 2015 года: {len(recent)} из {len(books)}")
+    for book in recent[:5]:
+        print(f"  {book['title']} ({book['first_publish_year']})")
+
+    # Проверка: все книги в результате — с годом >= 2015
+    for book in recent:
+        assert book["first_publish_year"] >= 2015, \
+            f"Книга {book['title']} с годом {book['first_publish_year']} прошла фильтр"
+    print("✓ filter_by_year")
