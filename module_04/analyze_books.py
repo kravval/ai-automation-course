@@ -36,6 +36,27 @@ def filter_with_pages(books: list) -> list:
     """Возвращает только те книги, у которых указано количество страниц."""
     return [book for book in books if book.get("pages") is not None]
 
+def sort_by_year(books: list, descending: bool = True) -> list:
+    """
+    Сортирует книги по году публикации.
+
+    Args:
+        books: Список словарей с книгами.
+        descending: True — от новых к старым, False — от старых к новым.
+    Returns:
+        Новый отсортированный список.
+    """
+    # Книги без года — в конец списка
+    books_with_year = [b for b in books if b.get("first_publish_year") is not None]
+    books_without_year = [b for b in books if b.get("first_publish_year" is not None)]
+
+    sorted_books = sorted(
+        books_with_year,
+        key=lambda book: book["first_publish_year"],
+        reverse=descending
+    )
+
+    return sorted_books + books_without_year
 
 if __name__ == "__main__":
     books = load_books("books.json")
@@ -61,3 +82,14 @@ if __name__ == "__main__":
     for book in with_pages[:3]:
         print(f"  {book['title']}: {book['pages']} стр.")
     print("✓ filter_with_pages")
+
+    newest_first = sort_by_year(books, descending=True)
+    print(f"\nТоп-5 самых новых книг:")
+    for book in newest_first[:5]:
+        print(f"  {book['title']} ({book['first_publish_year']})")
+
+    # Проверка: первая книга — с самым большим годом
+    years = [b["first_publish_year"] for b in newest_first
+             if b["first_publish_year"] is not None]
+    assert years == sorted(years, reverse=True), "Сортировка нарушена"
+    print("✓ sort_by_year")
