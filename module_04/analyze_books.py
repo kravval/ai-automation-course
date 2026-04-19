@@ -81,6 +81,7 @@ def get_decade(year: int | None) -> str:
     decade = (year // 10) * 10
     return f"{decade}s"
 
+
 def count_by_decade(books: list) -> dict:
     """
     Подсчитывает количество книг в каждом десятилетии
@@ -95,6 +96,7 @@ def count_by_decade(books: list) -> dict:
         counts[decade] = counts.get(decade, 0) + 1
 
     return dict(sorted(counts.items()))
+
 
 def group_by_author(books: list) -> dict:
     """
@@ -112,6 +114,32 @@ def group_by_author(books: list) -> dict:
         author = book.get("author", "Unknown Author")
         groups.setdefault(author, []).append(book)
     return groups
+
+
+def find_prolific_authors(groups: dict, min_books: int = 2) -> list:
+    """
+    Находит авторов с количеством книг >= min_books.
+
+    Args:
+        groups: Словарь {автор: [список_книг]} из group_by_author.
+        min_books: Минимальное количество книг.
+    Returns:
+            Список словарей {"author": ..., "book_count": ..., "titles": [...]},
+            отсортированный по количеству книг по убыванию.
+    """
+
+    prolific = []
+
+    for author, author_books in groups.items():
+        if len(author_books) >= min_books:
+            prolific.append({
+                "author": author,
+                "book_count": len(author_books),
+                "titles": [b["title"] for b in author_books]
+            })
+        prolific.sort(key=lambda a: ["book_count"], reverse=True)
+        return prolific
+
 
 if __name__ == "__main__":
     books = load_books("books.json")
@@ -180,3 +208,17 @@ if __name__ == "__main__":
     # Тест: группировка по автору
     author_groups = group_by_author(books)
     print(f"\nВсего уникальных авторов: {len(author_groups)}")
+
+    # Проверка: сумма книг по всем авторам = общему количеству
+    total = sum(len(group) for group in author_groups.values())
+    assert total == len(books), "Группировка потеряла книги"
+    print("✓ group_by_author")
+
+    # Тест: авторы с несколькими книгами
+    prolific = find_prolific_authors(author_groups, min_books=2)
+    print(f"\nАвторы с 2+ книгами:")
+    for author_info in prolific:
+        print(f"  {author_info['author']} ({author_info['book_count']} книг):")
+        for title in author_info["titles"]:
+            print(f"    — {title}")
+    print("✓ find_prolific_authors")
