@@ -141,43 +141,83 @@ def find_prolific_authors(groups: dict, min_books: int = 2) -> list:
         return prolific
 
 def decade_stats(books: list) -> list:
-    """
-    Рассчитывает статистику по каждому десятилетию.
+        """
+        Рассчитывает статистику по каждому десятилетию.
 
-    Args:
-        books: Список словарей с книгами.
+        Args:
+            books: Список словарей с книгами.
+
+        Returns:
+            Список словарей с полями: decade, book_count, avg_editions, top_book,
+            отсортированный хронологически.
+        """
+        # Группировка книг по десятилетиям
+        groups = {}
+        for book in books:
+            decade = get_decade(book.get("first_publish_year"))
+            groups.setdefault(decade, []).append(book)
+
+        stats = []
+        for decade, decade_books in sorted(groups.items()):
+            editions = [b.get("edition_count", 0) for b in decade_books]
+            avg_editions = round(sum(editions) / len(editions), 1)
+
+            # Самая издаваемая книга десятилетия
+            top_book = max(decade_books, key=lambda b: b.get("edition_count", 0))
+
+            stats.append({
+                "decade": decade,
+                "book_count": len(decade_books),
+                "avg_editions": avg_editions,
+                "top_book": top_book["title"],
+                "top_editions": top_book.get("edition_count", 0),
+            })
+
+        return stats
+
+def analyze_languages(books: list) -> dict:
+    """
+    Анализирует языковое распределение книг.
+
+    Обрабатывает два формата поля language:
+    - список: ["eng", "ger"] — книга на нескольких языках
+    - строка: "unknown" — язык неизвестен
+
     Returns:
-        Список словарей с полями: decade, book_count, avg_editions, top_book.
+        Словарь с ключами:
+        - "language_counts": {язык: количество_книг}
+        - "multilingual": список книг на 2+ языках
     """
-    groups = {}
+    lang_counts = {}
+    multilingual = []
 
     for book in books:
-        decade = get_decade(book.get("first_publish_year"))
-        groups.setdefault(decade, []).append(book)
+        lang = book.get("language", "unknown")
 
-    stats = []
+        # Нормализация: строку превращаем в список
+        if isinstance(lang, str):
+            languages = [lang]
+        else:
+            languages = lang
 
-    for book in books:
-        decade = get_decade(book.get("first_publish_year"))
-        groups.setdefault(decade, []).append(book)
+        # Подсчёт каждого языка
+        for language in languages:
+            lang_counts[language] = lang_counts.get(language, 0) + 1
 
-    stats = []
-    for decade, decade_books in sorted(groups.items()):
-        editions = [b.get("edition_count", 0) for b in decade_books]
-        avg_editions = round(sum(editions) / len(editions), 1)
+        # Мультиязычные книги
+        if len(languages) > 1:
+            multilingual.append({
+                "title": book["title"],
+                "languages": languages,
+            })
 
-        # Самая издаваемая книга десятилетия
-        top_book = max(decade_books, key=lambda b: b.get("edition_count", 0))
+    # Сортировка по количеству
+    lang_counts = dict(sorted(lang_counts.items(), key=lambda p: p[1], reverse=True))
 
-        stats.append({
-            "decade": decade,
-            "book_count": len(decade_books),
-            "avg_editions": avg_editions,
-            "top_book": top_book["title"],
-            "top_editions": top_book.get("edition_count", 0),
-        })
-
-    return stats
+    return {
+        "language_counts": lang_counts,
+        "multilingual": multilingual,
+    }
 
 
 if __name__ == "__main__":
@@ -280,3 +320,18 @@ if __name__ == "__main__":
     total = sum(s["book_count"] for s in d_stats)
     assert total == len(books), "Статистика потеряла книги"
     print("✓ decade_stats")
+
+    # Тест: анализ языков
+    lang_analysis = analyze_languages(books)
+
+    print(f"\nРаспределение по языкам:")
+    for lang, count in lang_analysis["language_counts"].items():
+        print(f"  {lang}: {count}")
+
+    print(f"\nМультиязычные книги ({len(lang_analysis['multilingual'])}):")
+    for book in lang_analysis["multilingual"]:
+        print(f"  {book['title']}: {book['languages']}")
+
+    # Проверка: английский должен быть самым частым
+    assert "eng" in lang_analysis["language_counts"], "Нет английских книг?"
+    print("✓ analyze_languages")
