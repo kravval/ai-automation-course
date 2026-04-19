@@ -81,6 +81,20 @@ def get_decade(year: int | None) -> str:
     decade = (year // 10) * 10
     return f"{decade}s"
 
+def count_by_decade(books: list) -> dict:
+    """
+    Подсчитывает количество книг в каждом десятилетии
+    Args:
+        books: Список словарей с книгами.
+    Returns:
+        Словарь {десятилетие: количество}, отсортированный по десятилетию.
+    """
+    counts = {}
+    for book in books:
+        decade = get_decade(book.get("first_publish_year"))
+        counts[decade] = counts.get(decade, 0) + 1
+
+    return dict(sorted(counts.items()))
 
 if __name__ == "__main__":
     books = load_books("books.json")
@@ -135,3 +149,13 @@ if __name__ == "__main__":
     assert get_decade(2024) == "2020s"
     assert get_decade(None) == "Unknown"
     print("\n✓ get_decade")
+
+    # Тест: подсчёт по десятилетиям
+    decade_counts = count_by_decade(books)
+    print(f"\nКниги по десятилетиям:")
+    table = [[decade, count] for decade, count in decade_counts.items()]
+    print(tabulate(table, headers=["Десятилетие", "Книг"], tablefmt="simple"))
+
+    # Проверка: сумма всех значений = общему количеству книг
+    assert sum(decade_counts.values()) == len(books), "Сумма не сходится"
+    print("✓ count_by_decade")
