@@ -140,6 +140,45 @@ def find_prolific_authors(groups: dict, min_books: int = 2) -> list:
         prolific.sort(key=lambda a: ["book_count"], reverse=True)
         return prolific
 
+def decade_stats(books: list) -> list:
+    """
+    Рассчитывает статистику по каждому десятилетию.
+
+    Args:
+        books: Список словарей с книгами.
+    Returns:
+        Список словарей с полями: decade, book_count, avg_editions, top_book.
+    """
+    groups = {}
+
+    for book in books:
+        decade = get_decade(book.get("first_publish_year"))
+        groups.setdefault(decade, []).append(book)
+
+    stats = []
+
+    for book in books:
+        decade = get_decade(book.get("first_publish_year"))
+        groups.setdefault(decade, []).append(book)
+
+    stats = []
+    for decade, decade_books in sorted(groups.items()):
+        editions = [b.get("edition_count", 0) for b in decade_books]
+        avg_editions = round(sum(editions) / len(editions), 1)
+
+        # Самая издаваемая книга десятилетия
+        top_book = max(decade_books, key=lambda b: b.get("edition_count", 0))
+
+        stats.append({
+            "decade": decade,
+            "book_count": len(decade_books),
+            "avg_editions": avg_editions,
+            "top_book": top_book["title"],
+            "top_editions": top_book.get("edition_count", 0),
+        })
+
+    return stats
+
 
 if __name__ == "__main__":
     books = load_books("books.json")
@@ -222,3 +261,22 @@ if __name__ == "__main__":
         for title in author_info["titles"]:
             print(f"    — {title}")
     print("✓ find_prolific_authors")
+
+    # Тест: статистика по десятилетиям
+    d_stats = decade_stats(books)
+    print(f"\nСтатистика по десятилетиям:")
+    table = [
+        [s["decade"], s["book_count"], s["avg_editions"],
+         s["top_book"], s["top_editions"]]
+        for s in d_stats
+    ]
+    print(tabulate(
+        table,
+        headers=["Декада", "Книг", "Ср. изданий", "Топ книга", "Изданий"],
+        tablefmt="fancy_grid"
+    ))
+
+    # Проверка
+    total = sum(s["book_count"] for s in d_stats)
+    assert total == len(books), "Статистика потеряла книги"
+    print("✓ decade_stats")
