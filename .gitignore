@@ -1,7 +1,9 @@
 # Виртуальное окружение
 venv/
 .venv/
- env/
+env/
+*.env
+!.env.example
 
 # Скомпилированные файлы Python
 __pycache__/
