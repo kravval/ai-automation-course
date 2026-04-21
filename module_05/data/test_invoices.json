@@ -1,0 +1,20 @@
+[
+  {
+    "number": "INV-001",
+    "vendor": "Acme Corp",
+    "amount": 1500.0,
+    "status": "paid"
+  },
+  {
+    "number": "INV-002",
+    "vendor": "TechSupply",
+    "amount": 3200.5,
+    "status": "unpaid"
+  },
+  {
+    "number": "INV-003",
+    "vendor": "Поставщик №3",
+    "amount": 450.75,
+    "status": "paid"
+  }
+]
