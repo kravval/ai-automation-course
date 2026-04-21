@@ -28,5 +28,11 @@
     "vendor": "TechSupply",
     "amount": 220.0,
     "status": "paid"
+  },
+  {
+    "number": "INV-006",
+    "vendor": "TestCorp",
+    "amount": 999.5,
+    "status": "unpaid"
   }
 ]

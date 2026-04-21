@@ -1,6 +1,7 @@
 """Менеджер счетов с хранением данных в JSON."""
 from file_io import get_data_dir, load_invoices, save_invoices
 
+
 def main():
     data_dir = get_data_dir()
     invoices_path = data_dir / "invoices.json"
@@ -24,7 +25,38 @@ def main():
     print(f"\n=== Счета ({len(invoices)}) ===")
     for invoice in invoices:
         marker = "✓" if invoice["status"] == "paid" else "✗"
-        print(f"{marker} {invoice['number']} | {invoice['vendor']:10} | {invoice['amount']:>10.2f} | {invoice['status']}")
+        print(f"{marker} {invoice['number']} | {invoice['vendor']:10} | {invoice['amount']:>10.2f} | "
+              f"{invoice['status']}")
+
+    # Добавление нового счёта
+    answer = input("\nДобавить новый счёт? (y/n): ").strip().lower()
+    if answer == "y":
+        new_invoice = prompt_for_invoice()
+        invoices.append(new_invoice)
+        save_invoices(invoices, invoices_path)
+        print(f"✓ Счёт {new_invoice['number']} добавлен. Всего счетов: {len(invoices)}")
+
+
+def prompt_for_invoice() -> dict:
+    """
+    Запрашивает у пользователя данные нового счёта.
+
+    Returns:
+        Словарь с полями number, vendor, amount, status.
+    """
+    print("\n=== Новый счёт ===")
+    number = input("Номер счёта: ").strip()
+    vendor = input("Поставщик: ").strip()
+    amount = float(input("Сумма: ").strip())
+    status = input("Статус (paid/unpaid): ").strip().lower()
+
+    return {
+        "number": number,
+        "vendor": vendor,
+        "amount": amount,
+        "status": status
+    }
+
 
 if __name__ == "__main__":
     main()
