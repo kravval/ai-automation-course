@@ -1,6 +1,7 @@
 """Функции для работы с файлами: чтение, запись, пути."""
 import json
 from pathlib import Path
+import csv
 
 
 def get_data_dir() -> Path:
@@ -29,6 +30,7 @@ def save_invoices(invoices: list, path: Path) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(invoices, f, indent=2, ensure_ascii=False)
 
+
 def load_invoices(path: Path) -> list:
     """
     Читает список счетов из JSON-файла.
@@ -44,6 +46,27 @@ def load_invoices(path: Path) -> list:
         return []
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def export_to_csv(invoices: list, path: Path) -> None:
+    """
+    Экспортирует список счетов в CSV-файл.
+
+    Args:
+        invoices: Список словарей со счетами.
+        path: Путь к файлу записи.
+    """
+    if not invoices:
+        # Нечего экспортировать — создаём пустой файл и выходим
+        path.write_text("", encoding="utf-8")
+        return
+
+    fieldnames = list(invoices[0].keys())
+
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(invoices)
 
 if __name__ == "__main__":
     data_dir = get_data_dir()
@@ -80,4 +103,3 @@ if __name__ == "__main__":
     print("✓ load_invoices: пустой список для несуществующего файла")
 
     print("\n✓ All file_io tests passed!")
-

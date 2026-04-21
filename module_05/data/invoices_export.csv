@@ -1,0 +1,7 @@
+number,vendor,amount,status
+INV-001,Acme Corp,1500.0,paid
+INV-002,TechSupply,3200.5,unpaid
+INV-003,OfficeMax,450.75,paid
+INV-004,Acme Corp,8900.0,unpaid
+INV-005,TechSupply,220.0,paid
+INV-006,TestCorp,999.5,unpaid

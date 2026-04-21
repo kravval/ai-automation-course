@@ -1,5 +1,5 @@
 """Менеджер счетов с хранением данных в JSON."""
-from file_io import get_data_dir, load_invoices, save_invoices
+from file_io import get_data_dir, load_invoices, save_invoices, export_to_csv
 
 
 def main():
@@ -35,6 +35,10 @@ def main():
         invoices.append(new_invoice)
         save_invoices(invoices, invoices_path)
         print(f"✓ Счёт {new_invoice['number']} добавлен. Всего счетов: {len(invoices)}")
+
+    csv_path = data_dir / "invoices_export.csv"
+    export_to_csv(invoices, csv_path)
+    print(f"\n✓ Экспорт в CSV: {csv_path}")
 
 
 def prompt_for_invoice() -> dict:
