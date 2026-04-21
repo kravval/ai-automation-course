@@ -29,6 +29,21 @@ def save_invoices(invoices: list, path: Path) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(invoices, f, indent=2, ensure_ascii=False)
 
+def load_invoices(path: Path) -> list:
+    """
+    Читает список счетов из JSON-файла.
+
+    Args:
+        path: Путь к JSON-файлу.
+
+    Returns:
+        Список словарей со счетами.
+        Если файл не существует - возвращает пустой список.
+    """
+    if not path.exists():
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 if __name__ == "__main__":
     data_dir = get_data_dir()
@@ -44,15 +59,25 @@ if __name__ == "__main__":
     test_path = data_dir / "test_invoices.json"
     save_invoices(test_invoices, test_path)
 
-    assert test_path.exists(), "Файл должен быть создан"
-    print(f"✓ Файл создан: {test_path}")
-
-    # Проверим глазами — прочитаем файл как текст
     content = test_path.read_text(encoding="utf-8")
-    print("Cодержимое файла:")
-    print(content)
+    assert "Поставщик" in content
+    print("✓ save_invoices: OK")
 
-    # Должна быть кириллица, а не \u...
-    assert "Поставщик" in content, "Кириллица должна быть читаемой"
-    print("✓ save_invoices tests passed!")
+    # Тест load_invoices — прочитаем, что записали
+    loaded = load_invoices(test_path)
+    print(f"Прочитано {len(loaded)} счетов")
+
+    assert len(loaded) == 3, "Должно быть 3 счёта"
+    assert loaded[0]["number"] == "INV-001"
+    assert loaded[2]["vendor"] == "Поставщик №3"
+    assert loaded[1]["amount"] == 3200.50
+    print("✓ load_invoices: данные соответствуют тем, что записали")
+
+    # Тест: чтение несуществующего файла → пустой список
+    missing_path = data_dir / "does_not_exist.json"
+    empty = load_invoices(missing_path)
+    assert empty == [], "Для несуществующего файла должен быть пустой список"
+    print("✓ load_invoices: пустой список для несуществующего файла")
+
+    print("\n✓ All file_io tests passed!")
 
