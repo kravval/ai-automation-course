@@ -1,5 +1,6 @@
 import requests
 from pprint import pprint
+from tabulate import tabulate
 
 url = "https://openlibrary.org/search.json"
 params = {"q": "java", "limit": 10}
@@ -23,5 +24,5 @@ for doc in data["docs"]:
 
     books.append(book)
 
-for book in books:
-    print(book)
+print(tabulate(books, headers="keys", tablefmt="fancy_outline",
+               numalign="center", stralign="center"))
