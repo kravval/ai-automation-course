@@ -1,11 +1,16 @@
 import requests
+from pprint import pprint
 
 url = "https://openlibrary.org/search.json"
 params = {"q": "python", "limit": 10}
 
-response = requests.get(url, params)
+response = requests.get(url, params=params)
 
-print("Status code:", response.status_code)
-print("Content type:", response.headers.get("Content-Type"))
-print("Первые 300 символов ответа:")
-print(response.text[:300])
+data = response.json()
+
+print("Top-level keys:", list(data.keys()))
+print("Общее количество найденных книг (numFound):", data["numFound"])
+print("Количество возвращенных документов:", len(data["docs"]))
+print()
+print("=== Структура первой книги ===")
+pprint(data["docs"][0])
