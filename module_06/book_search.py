@@ -2,15 +2,26 @@ import requests
 from pprint import pprint
 
 url = "https://openlibrary.org/search.json"
-params = {"q": "python", "limit": 10}
+params = {"q": "java", "limit": 10}
 
 response = requests.get(url, params=params)
 
 data = response.json()
 
-print("Top-level keys:", list(data.keys()))
-print("Общее количество найденных книг (numFound):", data["numFound"])
-print("Количество возвращенных документов:", len(data["docs"]))
-print()
-print("=== Структура первой книги ===")
-pprint(data["docs"][0])
+books = []
+
+for doc in data["docs"]:
+    title = doc.get("title", "Unknown title")
+    authors = doc.get("author_name", ["Unknown author"])
+    year = doc.get("first_publish_year")
+
+    book = {
+        "title": title,
+        "author": ", ".join(authors),
+        "year": year
+    }
+
+    books.append(book)
+
+for book in books:
+    print(book)
