@@ -6,9 +6,26 @@ from pathlib import Path
 url = "https://openlibrary.org/search.json"
 params = {"q": "java", "limit": 10}
 
-response = requests.get(url, params=params)
+try:
+    response = requests.get(url, params=params, timeout=10)
+    response.raise_for_status()
+    data = response.json()
+except requests.exceptions.Timeout:
+    print("Ошибка: истекло время ожидания запроса (сервер не ответил в течение 10 секунд)")
+    exit(1)
+except requests.exceptions.ConnectionError:
+    print("Ошибка: не удалось установить соединение (проверьте подключение к интернету)")
+    exit(1)
+except requests.exceptions.HTTPError as e:
+    print(f"Ошибка: API вернул код ошибки: {e}")
+    exit(1)
+except requests.exceptions.RequestException as e:
+    print(f"Ошибка: непредвиденная ошибка при запросе: {e}")
+    exit(1)
 
-data = response.json()
+if not data.get("docs"):
+    print(f"По запросу не найдено книг: '{params['q']}'")
+    exit(0)
 
 books = []
 
