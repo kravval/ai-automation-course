@@ -6,6 +6,30 @@ from pathlib import Path
 url = "https://openlibrary.org/search.json"
 params = {"q": "java", "limit": 10}
 
+
+def search_books(query: str, limit: int = 10) -> list[dict]:
+    """Выполняет запрос к Open Library API и возвращает список кник"""
+
+
+def extract_book_info(doc: dict) -> dict:
+    """Извлекает title, author, year из одного элемента docs."""
+
+
+def save_to_json(books: list[dict], path: Path) -> None:
+    """Сохраняет список книг в JSON-файл."""
+
+
+def print_books_table(books: list[dict]) -> None:
+    """"Выводит книги в виде форматированной таблицы."""
+
+
+def main() -> None:
+    """Главная фунция: ищет книги и выводит результаты."""
+
+
+if __name__ == "__main__":
+    main()
+
 try:
     response = requests.get(url, params=params, timeout=10)
     response.raise_for_status()
