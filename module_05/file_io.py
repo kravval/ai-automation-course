@@ -41,11 +41,19 @@ def load_invoices(path: Path) -> list:
     Returns:
         Список словарей со счетами.
         Если файл не существует - возвращает пустой список.
+
+    Raises:
+        ValueError: Если файл существует, но его содержимое невалидное.
     """
     if not path.exists():
         return []
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Файл {path} содержит невалидный JSON: {e}") from e
+    except UnicodeDecodeError as e:
+        raise ValueError(f"Файл: {path} не UTF-8: {e}") from e
 
 
 def export_to_csv(invoices: list, path: Path) -> None:
