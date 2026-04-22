@@ -2,21 +2,30 @@
 import json
 from pathlib import Path
 import csv
+import os
+from dotenv import load_dotenv
 
+# Загружаем .env при импорте модуля.
+# load_doenv ищет .env относительно текущей директории,
+# поэтому указываем путь явно - рядом с этим файлом.
+
+load_dotenv(Path(__file__).parent / ".env")
 
 def get_data_dir() -> Path:
     """
-    Возвращает путь к папке с данными приложения.
-    Создаёт папку, если её нет.
+    Возвращает путь к папке с данными.
+    Путь берётся из переменной окружения DATA_DIR (из .env).
+    Если переменная не задана - используется ./data относительно текущего файла.
 
     Returns:
-        Объект Path, указывающий на папку data внутри module_05.
+        Объект Path, указывающий на папку данных.
     """
 
-    data_dir = Path(__file__).parent / "data"
+    data_dir_str = os.getenv("DATA_DIR", "./data")
+    base_dir = Path(__file__).parent
+    data_dir = base_dir / data_dir_str
     data_dir.mkdir(parents=True, exist_ok=True)
-    return data_dir
-
+    return data_dir.resolve()
 
 def save_invoices(invoices: list, path: Path) -> None:
     """
