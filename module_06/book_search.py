@@ -1,3 +1,4 @@
+import sys
 import json
 import logging
 from pathlib import Path
@@ -86,6 +87,8 @@ def save_to_json(books: list[dict], path: Path) -> None:
 def print_books_table(books: list[dict]) -> None:
     """"
     Выводит книги в виде форматированной таблицы.
+    Args:
+        books:
     """
     print(tabulate(books, headers="keys", tablefmt="fancy_outline",
                numalign="center", stralign="center"))
@@ -94,8 +97,16 @@ def main() -> None:
     """
     Главная функция: ищет книги и выводит результаты.
     """
-    query = "python"
-    books = search_books(query, limit=10)
+
+    if len(sys.argv) < 2:
+        print("Usage: python3 book_search.py <query> [limit]")
+        print("Example: python3 book_search.py 'machine_learning' 20")
+        exit(1)
+
+    query = sys.argv[1]
+    limit = int(sys.argv[2]) if len(sys.argv) >= 3 else 10
+
+    books = search_books(query, limit=limit)
 
     if books is None:
         logger.error("Failed to fetch books")
