@@ -1,0 +1,12 @@
+[
+        {"number": "INV-001", "date": "2026-01-15", "vendor": "Acme Corp",    "amount": 1500.00, "status": "paid"},
+        {"number": "INV-002", "date": "2026-01-18", "vendor": "TechSupply",   "amount": 3200.00, "status": "unpaid"},
+        {"number": "INV-003", "date": "2026-01-22", "vendor": "Acme Corp",    "amount": 450.00,  "status": "paid"},
+        {"number": "INV-004", "date": "2026-02-02", "vendor": "GlobalParts",  "amount": 7800.00, "status": "unpaid"},
+        {"number": "INV-005", "date": "2026-02-10", "vendor": "TechSupply",   "amount": 2100.00, "status": "paid"},
+        {"number": "INV-006", "date": "2026-02-14", "vendor": "Acme Corp",    "amount": 6500.00, "status": "unpaid"},
+        {"number": "INV-007", "date": "2026-02-21", "vendor": "OfficeDepot",  "amount": 320.00,  "status": "paid"},
+        {"number": "INV-008", "date": "2026-03-01", "vendor": "GlobalParts",  "amount": 4200.00, "status": "unpaid"},
+        {"number": "INV-009", "date": "2026-03-07", "vendor": "TechSupply",   "amount": 890.00,  "status": "paid"},
+        {"number": "INV-010", "date": "2026-03-12", "vendor": "Acme Corp",    "amount": 5300.00, "status": "unpaid"}
+    ]
