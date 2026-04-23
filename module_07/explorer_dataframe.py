@@ -18,7 +18,7 @@ print(df.shape)
 print("\n=== Названия колонок ===")
 print(df.columns.to_list())
 
-print("\n=== Типы данных в колоках ===")
+print("\n=== Типы данных в колонках ===")
 print(df.dtypes)
 
 print("\n=== Первые две строки ===")
