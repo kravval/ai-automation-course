@@ -1,5 +1,7 @@
 """Генерация Excel-отчёта по счетам."""
+
 import pandas as pd
+from reports import build_excel_report
 
 # Загрузка JSON прямо в DataFrame - pandas сам парсит файл
 df = pd.read_json("/home/valk/projects/ai-automation-course/module_07/invoices.json")
@@ -19,7 +21,7 @@ df["amount_category"] = pd.cut(
     df["amount"],
     bins=[0, 1000, 5000, float("inf")],
     labels=["small", "medium", "large"],
-    right=False
+    right=False,
 )
 
 print("\n=== Таблица с категориями ===")
@@ -52,12 +54,16 @@ print("\n=== Сумма счетов по поставщикам ===")
 print(vendor_totals)
 
 # Сводка по поставщикам: несколько метрик сразу
-vendor_summary = df.groupby("vendor").agg(
-    invoices_count=("number", "count"),
-    total_amount=("amount", "sum"),
-    average_amount=("amount", "mean"),
-    unpaid_count=("status", lambda s: (s == "unpaid").sum())
-).round(2)
+vendor_summary = (
+    df.groupby("vendor")
+    .agg(
+        invoices_count=("number", "count"),
+        total_amount=("amount", "sum"),
+        average_amount=("amount", "mean"),
+        unpaid_count=("status", lambda s: (s == "unpaid").sum()),
+    )
+    .round(2)
+)
 
 print("\n=== Сводка по поставщикам ===")
 print(vendor_summary)
@@ -73,12 +79,11 @@ print(vendor_summary)
 df.to_excel("invoices_simple.xlsx", index=False)
 print("\nФайл invoices_simple.xlsx создан")
 
-# Экспорт в один файл с тремя листами
-output_path = "invoices_report.xlsx"
 
-with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
-    df.to_excel(writer, sheet_name="All Invoices", index=False)
-    unpaid.to_excel(writer, sheet_name="Unpaid", index=False)
-    vendor_summary.to_excel(writer, sheet_name="Vendors", index=False)
-
-print(f"\nФайл {output_path} создан с тремя листами")
+build_excel_report(
+    df,
+    unpaid,
+    vendor_summary,
+    "/home/valk/projects/ai-automation-course/invoices_report.xlsx",
+)
+print("\nФайл invoice_report.xlsx создан")
