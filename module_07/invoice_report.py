@@ -44,3 +44,27 @@ df_sorted = df.sort_values("date", ascending=False)
 
 print("\n=== Все счета, отсортированные по дате (новые сверху) ===")
 print(df_sorted[["number", "date", "vendor", "amount", "status"]])
+
+# Простая группировка: сумма счетов по каждому поставщику
+vendor_totals = df.groupby("vendor")["amount"].sum()
+
+print("\n=== Сумма счетов по поставщикам ===")
+print(vendor_totals)
+
+# Сводка по поставщикам: несколько метрик сразу
+vendor_summary = df.groupby("vendor").agg(
+    invoices_count=("number", "count"),
+    total_amount=("amount", "sum"),
+    average_amount=("amount", "mean"),
+    unpaid_count=("status", lambda s: (s == "unpaid").sum())
+).round(2)
+
+print("\n=== Сводка по поставщикам ===")
+print(vendor_summary)
+
+print("\n=== Тип результата ===")
+print(type(vendor_summary))
+print(vendor_summary.columns.to_list())
+
+vendor_summary = vendor_summary.reset_index()
+print(vendor_summary)
