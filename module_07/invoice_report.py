@@ -25,3 +25,22 @@ df["amount_category"] = pd.cut(
 print("\n=== Таблица с категориями ===")
 
 print(df[["number", "vendor", "amount", "amount_category"]])
+
+# Только неплаченные счета
+unpaid = df[df["status"] == "unpaid"]
+
+print("\n=== Только неоплаченные счета ===")
+print(unpaid[["number", "date", "vendor", "amount"]])
+print(f"Всего неплаченных счетов: {len(unpaid)}")
+print(f"Сумма долга: {unpaid["amount"].sum():.2f}")
+
+# Неоплаченные и более 5000
+critical = df[(df["status"] == "unpaid") & (df["amount"] > 5000)]
+print("\n=== Неоплаченные счета выше 5000 ===")
+print(critical[["number", "date", "vendor", "amount"]])
+
+# Все счета, отсортированные по дате (новые сверху)
+df_sorted = df.sort_values("date", ascending=False)
+
+print("\n=== Все счета, отсортированные по дате (новые сверху) ===")
+print(df_sorted[["number", "date", "vendor", "amount", "status"]])
