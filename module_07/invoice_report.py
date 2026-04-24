@@ -68,3 +68,17 @@ print(vendor_summary.columns.to_list())
 
 vendor_summary = vendor_summary.reset_index()
 print(vendor_summary)
+
+# Простой экспорт - одна таблица, один файл
+df.to_excel("invoices_simple.xlsx", index=False)
+print("\nФайл invoices_simple.xlsx создан")
+
+# Экспорт в один файл с тремя листами
+output_path = "invoices_report.xlsx"
+
+with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+    df.to_excel(writer, sheet_name="All Invoices", index=False)
+    unpaid.to_excel(writer, sheet_name="Unpaid", index=False)
+    vendor_summary.to_excel(writer, sheet_name="Vendors", index=False)
+
+print(f"\nФайл {output_path} создан с тремя листами")
