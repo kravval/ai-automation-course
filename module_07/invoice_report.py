@@ -84,6 +84,6 @@ build_excel_report(
     df,
     unpaid,
     vendor_summary,
-    "/home/valk/projects/ai-automation-course/invoices_report.xlsx",
+    "invoices_report.xlsx",
 )
 print("\nФайл invoice_report.xlsx создан")
