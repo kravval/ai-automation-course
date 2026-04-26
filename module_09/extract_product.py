@@ -49,6 +49,7 @@ def strip_code_fences(text: str) -> str:
 
     return text.strip()
 
+
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 message = client.messages.create(
     model=MODEL,
@@ -62,6 +63,34 @@ message = client.messages.create(
         }
     ]
 )
+
+
+def validate_product(data: dict) -> None:
+    """
+    Проверяет, что распарсенный словарь имеет ожидаемую струкуру.
+    Бросает ValueError с понятным сообщением, если что-то не так.
+    """
+    required_fields = {
+        "name": str,
+        "price": (int, float),
+        "currency": str,
+        "category": str
+    }
+
+    for field, expected_type in required_fields.items():
+        if field not in data:
+            raise ValueError(f"Отсутствует обязательное поле: '{field}'")
+        value = data[field]
+
+        if value is None:
+            continue
+
+        if not isinstance(value, expected_type):
+            raise ValueError(
+                f"Поле '{field}' имеет неверный тип: "
+                f"ожидался {expected_type}, получен {type(value).__name__}"
+            )
+
 
 raw_response = message.content[0].text
 
@@ -81,6 +110,14 @@ except json.JSONDecodeError as e:
     raise SystemExit(1)
 
 print("\n=== Распарсенные данные ===")
+
+try:
+    validate_product(product)
+except ValueError as e:
+    print(f"\n❌ Ошибка валидации: {e}")
+    print("Модель вернула некорректную структуру данных.")
+    raise SystemExit(1)
+
 print(f"    Название:   {product['name']}")
 print(f"    Цена:       {product['price']} {product['currency']}")
 print(f"    Категория:  {product['category']}")
