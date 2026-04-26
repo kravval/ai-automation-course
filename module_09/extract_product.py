@@ -118,46 +118,81 @@ def extract_product(client: anthropic.Anthropic, description: str) -> dict:
     """
     user_message = f"Извлеки данные из следующего описания товара:\n\n{description}"
     raw_response = call_llm(client, SYSTEM_PROMPT, user_message)
-    print(f"Ответ модели:\n {raw_response}")
+    # print(f"Ответ модели:\n {raw_response}")
     cleaned_response = strip_code_fences(raw_response)
-    print(f"Очищенный результат:\n {cleaned_response}")
+    # print(f"Очищенный результат:\n {cleaned_response}")
     product = json.loads(cleaned_response)
-    print(f"Конвертация JSON в dict:\n {product}")
+    # print(f"Конвертация JSON в dict:\n {product}")
     validate_product(product)
 
     return product
 
+
 def main():
     """
-    Точка входа: обрабатывает один тестовый товар и печатает результат.
+    Точка входа: обрабатывает список товаров и печатает сводный отчёт.
     """
-    product_description = """
+    product_descriptions = [
+        """
         Apple iPhone 15 Pro Max 256GB Natural Titanium — 1 299 €
         Флагманский смартфон с процессором A17 Pro, дисплеем ProMotion 6.7",
-        системой камер Pro с 5x оптическим зумом. Категория: смартфоны премиум-сегмента.
+        системой камер Pro с 5x оптическим зумом.
+        """,
+
         """
+        Sony WH-1000XM5 Black — наушники беспроводные с активным шумоподавлением,
+        до 30 часов работы. Цена: 379.99 USD. Категория: аудиотехника.
+        """,
+
+        """
+        Книга "Чистый код" Роберт Мартин, издательство Питер, 464 страницы.
+        Стоимость: 1890 руб. Категория: техническая литература по программированию.
+        """,
+
+        """
+        Кофемашина DeLonghi Magnifica S — автоматическая, эспрессо и капучино,
+        встроенная кофемолка. Розничная цена 549 евро.
+        """,
+
+        """
+        Lenovo ThinkPad X1 Carbon Gen 11, Intel Core i7, 16GB RAM, 1TB SSD,
+        14" 2.8K OLED дисплей. 1 899 USD. Бизнес-ноутбуки.
+        """,
+    ]
 
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-    try:
-        product = extract_product(client, product_description)
-    except anthropic.AuthenticationError:
-        print("\n❌ Ошибка авторизации: проверь API-ключ в .env")
-        raise SystemExit(1)
-    except anthropic.APIError as e:
-        print(f"\n❌ Ошибка API: {e}")
-        raise SystemExit(1)
-    except json.JSONDecodeError as e:
-        print(f"\n❌ Модель вернула невалидный JSON: {e}")
-        raise SystemExit(1)
-    except ValueError as e:
-        print(f"\n❌ Ошибка валидации: {e}")
-        raise SystemExit(1)
+    results = []
+    errors = []
 
-    print("=== Распарсенные данные ===")
-    print(f"  Название:  {product['name']}")
-    print(f"  Цена:      {product['price']} {product['currency']}")
-    print(f"  Категория: {product['category']}")
+    for i, description in enumerate(product_descriptions, start=1):
+        print(f"Обрабатываю товар {i} из {len(product_descriptions)}...")
+
+        try:
+            product = extract_product(client, description)
+            results.append(product)
+        except(anthropic.APIError, json.JSONDecodeError, ValueError) as e:
+            error_info = {"index": i, "error": str(e), "type": type(e).__name__}
+            errors.append(error_info)
+            print(f"    ⚠️  Ошибка: {type(e).__name__}: {e}")
+
+    print("\n" + "=" * 50)
+    print(f"Обработано успешно: {len(results)} из {len(product_descriptions)}")
+    print(f"Ошибок: {len(errors)}")
+    print("=" * 50)
+
+    if results:
+        print("\n=== Извлечённые данные ===")
+        for i, product in enumerate(results, start=1):
+            print(f"\n[{i}] {product['name']}")
+            print(f"    Цена:   {product['price']} {product['currency']}")
+            print(f"    Категория:  {product['category']}")
+
+    if errors:
+        print("\n=== Ошибки ===")
+        for err in errors:
+            print(f"    Товар:  #{err['index']}: {err['type']}: {err['error']}")
+
 
 if __name__ == "__main__":
     main()
