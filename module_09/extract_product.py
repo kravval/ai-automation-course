@@ -1,5 +1,4 @@
 import os
-
 from dotenv import load_dotenv
 import anthropic
 import json
@@ -12,10 +11,9 @@ MAX_TOKENS = 500
 TEMPERATURE = 0
 
 SYSTEM_PROMPT = """
-Ты — ассистент для извлечения данных о товарах.
+    Ты — ассистент для извлечения данных о товарах.
     Извлекай данные из описания товара и возвращай СТРОГО в JSON-формате.
     Никаких пояснений, комментариев или markdown-обёрток — только чистый JSON.
-    СТРОГО БЕЗ ```json```
     
     Формат ответа СТРОГО такой:
     {
@@ -26,6 +24,7 @@ SYSTEM_PROMPT = """
     }
     
     Если какое-то поле невозможно извлечь — используй null.
+    Не используй тройные обратные кавычки.
 """
 
 PRODUCT_DESCRIPTION = """
@@ -37,8 +36,7 @@ PRODUCT_DESCRIPTION = """
 
 def strip_code_fences(text: str) -> str:
     """
-        Убирает ```json ... ``` или ``` ... ``` вокруг ответа модели.
-        Если обёртки нет — возвращает строку как есть.
+        Убирает markdown-обёртку ```...``` вокруг ответа модели, если она есть.
         """
     text = text.strip()
 
@@ -51,56 +49,10 @@ def strip_code_fences(text: str) -> str:
     return text.strip()
 
 
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=10),
-    retry=retry_if_exception_type((
-            anthropic.RateLimitError,
-            anthropic.APIConnectionError,
-            anthropic.APIStatusError
-    )),
-    reraise=True
-)
-def call_llm(client, system_prompt: str, user_message: str) -> str:
-    """
-    Вызывает Claude и возвращает текст ответа.
-    Автоматически повторяется при временных ошибках API.
-    """
-    message = client.messages.create(
-        model=MODEL,
-        max_tokens=MAX_TOKENS,
-        temperature=TEMPERATURE,
-        system=system_prompt,
-        messages=[
-            {"role": "user", "content": user_message}
-        ]
-    )
-    return message.content[0].text
-
-
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
-user_message = f"Извлеки данные из следующего описания товара:\n\n{PRODUCT_DESCRIPTION}"
-
-try:
-    raw_response = call_llm(client, SYSTEM_PROMPT, user_message)
-except anthropic.AuthenticationError:
-    print("\n❌ Ошибка авторизации: проверь API-ключ в .env")
-    raise SystemExit(1)
-except anthropic.RateLimitError:
-    print("\n❌ Превышен лимит запросов после нескольких попыток.")
-    raise SystemExit(1)
-except anthropic.APIConnectionError as e:
-    print(f"\n❌ Не удалось подключиться к API после нескольких попыток: {e}")
-    raise SystemExit(1)
-except anthropic.APIError as e:
-    print(f"\n❌ Ошибка API: {e}")
-    raise SystemExit(1)
-
 def validate_product(data: dict) -> None:
     """
-    Проверяет, что распарсенный словарь имеет ожидаемую струкуру.
-    Бросает ValueError с понятным сообщением, если что-то не так.
+    Проверяет структуру распарсенного словаря.
+    Бросает ValueError при ошибке.
     """
     required_fields = {
         "name": str,
@@ -112,6 +64,7 @@ def validate_product(data: dict) -> None:
     for field, expected_type in required_fields.items():
         if field not in data:
             raise ValueError(f"Отсутствует обязательное поле: '{field}'")
+
         value = data[field]
 
         if value is None:
@@ -124,33 +77,87 @@ def validate_product(data: dict) -> None:
             )
 
 
-raw_response = call_llm(client, SYSTEM_PROMPT, user_message)
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type((
+            anthropic.RateLimitError,
+            anthropic.APIConnectionError,
+            anthropic.APIStatusError
+    )),
+    reraise=True
+)
+def call_llm(client: anthropic.Anthropic, system_prompt: str, user_message: str) -> str:
+    """
+    Вызывает Claude и возвращает текст ответа.
+    Автоматически повторяется при временных ошибках API.
+    """
+    message = client.messages.create(
+        model=MODEL,
+        max_tokens=MAX_TOKENS,
+        temperature=TEMPERATURE,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_message}]
+    )
+    return message.content[0].text
 
-print("=== Сырой ответ модели ===")
-print(raw_response)
 
-cleaned_response = strip_code_fences(raw_response)
+def extract_product(client: anthropic.Anthropic, description: str) -> dict:
+    """
+    Извлекает структурированные данные о товаре из текстового описания.
 
-print("=== Очищенный JSON ===")
-print(cleaned_response)
-
-try:
+    Args:
+        client: клиент Anthropic API
+        description: текст описания товара
+    Returns:
+        dict с полями: name, price, currency, category
+    Raises:
+        anthropic.APIError: при проблемах с API после исчерпания retry
+        json.JSONDecoderError: если модель вернула невалидный API
+        ValueError: если структура данных не прошла валидацию
+    """
+    user_message = f"Извлеки данные из следующего описания товара:\n\n{description}"
+    raw_response = call_llm(client, SYSTEM_PROMPT, user_message)
+    print(f"Ответ модели:\n {raw_response}")
+    cleaned_response = strip_code_fences(raw_response)
+    print(f"Очищенный результат:\n {cleaned_response}")
     product = json.loads(cleaned_response)
-except json.JSONDecodeError as e:
-    print(f"\n❌ Ошибка парсинга JSON: {e}")
-    print(f"Модель вернула не валидный JSON. Проверь промпт или попробуй снова.")
-    raise SystemExit(1)
-
-print("\n=== Распарсенные данные ===")
-
-try:
+    print(f"Конвертация JSON в dict:\n {product}")
     validate_product(product)
-except ValueError as e:
-    print(f"\n❌ Ошибка валидации: {e}")
-    print("Модель вернула некорректную структуру данных.")
-    raise SystemExit(1)
 
-print(f"    Название:   {product['name']}")
-print(f"    Цена:       {product['price']} {product['currency']}")
-print(f"    Категория:  {product['category']}")
-print(f"\nТип объекта product: {type(product).__name__}")
+    return product
+
+def main():
+    """
+    Точка входа: обрабатывает один тестовый товар и печатает результат.
+    """
+    product_description = """
+        Apple iPhone 15 Pro Max 256GB Natural Titanium — 1 299 €
+        Флагманский смартфон с процессором A17 Pro, дисплеем ProMotion 6.7",
+        системой камер Pro с 5x оптическим зумом. Категория: смартфоны премиум-сегмента.
+        """
+
+    client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+    try:
+        product = extract_product(client, product_description)
+    except anthropic.AuthenticationError:
+        print("\n❌ Ошибка авторизации: проверь API-ключ в .env")
+        raise SystemExit(1)
+    except anthropic.APIError as e:
+        print(f"\n❌ Ошибка API: {e}")
+        raise SystemExit(1)
+    except json.JSONDecodeError as e:
+        print(f"\n❌ Модель вернула невалидный JSON: {e}")
+        raise SystemExit(1)
+    except ValueError as e:
+        print(f"\n❌ Ошибка валидации: {e}")
+        raise SystemExit(1)
+
+    print("=== Распарсенные данные ===")
+    print(f"  Название:  {product['name']}")
+    print(f"  Цена:      {product['price']} {product['currency']}")
+    print(f"  Категория: {product['category']}")
+
+if __name__ == "__main__":
+    main()
