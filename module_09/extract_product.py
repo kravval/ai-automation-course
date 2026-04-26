@@ -51,18 +51,33 @@ def strip_code_fences(text: str) -> str:
 
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-message = client.messages.create(
-    model=MODEL,
-    max_tokens=MAX_TOKENS,
-    temperature=TEMPERATURE,
-    system=SYSTEM_PROMPT,
-    messages=[
-        {
-            "role": "user",
-            "content": f"Извлеки данные из следующего описания товара:\n\n{PRODUCT_DESCRIPTION}"
-        }
-    ]
-)
+
+try:
+    message = client.messages.create(
+        model=MODEL,
+        max_tokens=MAX_TOKENS,
+        temperature=TEMPERATURE,
+        system=SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Извлеки данные из следующего описания товара:\n\n{PRODUCT_DESCRIPTION}"
+            }
+        ]
+    )
+except anthropic.AuthenticationError:
+    print("\n❌ Ошибка авторизации: проверь API-ключ в .env")
+    raise SystemExit(1)
+except anthropic.RateLimitError:
+    print("\n❌ Превышен лимит запросов. Подожди минуту и попробуй снова.")
+    raise SystemExit(1)
+except anthropic.APIConnectionError as e:
+    print(f"\n❌ Не удалось подключиться к API: {e}")
+    print("Проверь интернет-соединение.")
+    raise SystemExit(1)
+except anthropic.APIError as e:
+    print(f"\n❌ Ошибка API: {e}")
+    raise SystemExit(1)
 
 
 def validate_product(data: dict) -> None:
