@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import anthropic
 import json
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 load_dotenv()
 
@@ -50,35 +51,51 @@ def strip_code_fences(text: str) -> str:
     return text.strip()
 
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
-try:
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type((
+            anthropic.RateLimitError,
+            anthropic.APIConnectionError,
+            anthropic.APIStatusError
+    )),
+    reraise=True
+)
+def call_llm(client, system_prompt: str, user_message: str) -> str:
+    """
+    Вызывает Claude и возвращает текст ответа.
+    Автоматически повторяется при временных ошибках API.
+    """
     message = client.messages.create(
         model=MODEL,
         max_tokens=MAX_TOKENS,
         temperature=TEMPERATURE,
-        system=SYSTEM_PROMPT,
+        system=system_prompt,
         messages=[
-            {
-                "role": "user",
-                "content": f"Извлеки данные из следующего описания товара:\n\n{PRODUCT_DESCRIPTION}"
-            }
+            {"role": "user", "content": user_message}
         ]
     )
+    return message.content[0].text
+
+
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+user_message = f"Извлеки данные из следующего описания товара:\n\n{PRODUCT_DESCRIPTION}"
+
+try:
+    raw_response = call_llm(client, SYSTEM_PROMPT, user_message)
 except anthropic.AuthenticationError:
     print("\n❌ Ошибка авторизации: проверь API-ключ в .env")
     raise SystemExit(1)
 except anthropic.RateLimitError:
-    print("\n❌ Превышен лимит запросов. Подожди минуту и попробуй снова.")
+    print("\n❌ Превышен лимит запросов после нескольких попыток.")
     raise SystemExit(1)
 except anthropic.APIConnectionError as e:
-    print(f"\n❌ Не удалось подключиться к API: {e}")
-    print("Проверь интернет-соединение.")
+    print(f"\n❌ Не удалось подключиться к API после нескольких попыток: {e}")
     raise SystemExit(1)
 except anthropic.APIError as e:
     print(f"\n❌ Ошибка API: {e}")
     raise SystemExit(1)
-
 
 def validate_product(data: dict) -> None:
     """
@@ -107,7 +124,7 @@ def validate_product(data: dict) -> None:
             )
 
 
-raw_response = message.content[0].text
+raw_response = call_llm(client, SYSTEM_PROMPT, user_message)
 
 print("=== Сырой ответ модели ===")
 print(raw_response)
