@@ -1,0 +1,24 @@
+# Виртуальное окружение
+venv/
+.venv/
+
+# Кеш Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.idea/
+.vscode/
+
+# Секреты
+.env
+*.key
+
+# Системное
+.DS_Store
+Thumbs.db
+
+# Результаты работы (большие/временные)
+output/
+*.log
