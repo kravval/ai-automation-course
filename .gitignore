@@ -22,3 +22,4 @@ Thumbs.db
 # Результаты работы (большие/временные)
 output/
 *.log
+/module-05-files/data/invoices_export.csv

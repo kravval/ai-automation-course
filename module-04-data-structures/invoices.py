@@ -140,6 +140,9 @@ def main():
         total = total_amount(vendor_invoices)
         print(f"    {vendor}: {len(vendor_invoices)} счёт(а) на ${total:,.2f}")
 
+    numbers = [inv["amount"] for inv in invoices]
+    print(numbers)
+
 
 if __name__ == "__main__":
     main()

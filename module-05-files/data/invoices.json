@@ -1,0 +1,58 @@
+[
+  {
+    "number": "INV-2024-001",
+    "vendor": "Acme Corp",
+    "amount": 1500.0,
+    "paid": true,
+    "date": "2024-10-15"
+  },
+  {
+    "number": "INV-2024-002",
+    "vendor": "TechSupply",
+    "amount": 3200.0,
+    "paid": false,
+    "date": "2024-10-22"
+  },
+  {
+    "number": "INV-2024-003",
+    "vendor": "Acme Corp",
+    "amount": 750.0,
+    "paid": false,
+    "date": "2024-11-01"
+  },
+  {
+    "number": "INV-2024-004",
+    "vendor": "GlobalShipping",
+    "amount": 4250.0,
+    "paid": true,
+    "date": "2024-11-08"
+  },
+  {
+    "number": "INV-2024-005",
+    "vendor": "Acme Corp",
+    "amount": 2100.0,
+    "paid": false,
+    "date": "2024-11-12"
+  },
+  {
+    "number": "INV-2024-006",
+    "vendor": "TechSupply",
+    "amount": 890.0,
+    "paid": true,
+    "date": "2024-11-20"
+  },
+  {
+    "number": "INV-2024-007",
+    "vendor": "MegaCorp",
+    "amount": 5600.0,
+    "paid": false,
+    "date": "2024-12-01"
+  },
+  {
+    "number": "INV-2024-008",
+    "vendor": "Wild Planet Productions",
+    "amount": 12500.0,
+    "paid": false,
+    "date": "2024-12-15"
+  }
+]
